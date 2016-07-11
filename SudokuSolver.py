@@ -36,8 +36,32 @@ class SudokuGrid()
     def AssignValue(self, values, square, digit):
         # other_values stores remaining digits for position = square
         other_values = values[square].replace(digit,'')
-        if all(EliminateValue(values, square, digits) for digits in other_values):
+        if all(self.EliminateValue(values, square, d) for d in other_values):
             return values
         else:
             # elimination of digits resulted in contradiction
             return False
+            
+    def EliminateValue(self, values, square, digit):
+        if d not in values[square]:
+            return values
+        # remove digit
+        values[square] = values[square].replace(digit,'')
+        if len(values[square]) == 0:
+            return False # for contradiction
+        elif len(values[square]) == 1:
+            remaining_digit = values[square]
+            if not all(self.EliminateValue(values, s, remaining_digit) for s in self.peers[square])
+                return False # for contradiction somewhere in peers of square
+        
+        # check all units of square for existance of 1 digit and then Eliminate from peers
+        for unit in self.units[square]:
+            digitplaces = [sq for sq in unit if digit in self.values[sq]]
+            if len(digitplaces) == 0:
+                return False # for contradiction
+            elif len(digitplaces) == 1:
+                if not(self.AssignValue(values, digitplaces[0], digit)):
+                    return False
+        
+        return values
+    
