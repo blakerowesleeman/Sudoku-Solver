@@ -44,19 +44,18 @@ class SudokuGrid()
             
     def EliminateValue(self, values, square, digit):
         if d not in values[square]:
-            return values
-        # remove digit
-        values[square] = values[square].replace(digit,'')
+            return values # digit has already been removed
+        values[square] = values[square].replace(digit,'') # remove digit
         if len(values[square]) == 0:
             return False # for contradiction
         elif len(values[square]) == 1:
-            remaining_digit = values[square]
-            if not all(self.EliminateValue(values, s, remaining_digit) for s in self.peers[square])
+            last_digit = values[square]
+            if not all(self.EliminateValue(values, s, last_digit) for s in self.peers[square])
                 return False # for contradiction somewhere in peers of square
         
-        # check all units of square for existance of 1 digit and then Eliminate from peers
+        # check all units of square for existance of 1 digit and then Eliminate that digit from peers
         for unit in self.units[square]:
-            digitplaces = [sq for sq in unit if digit in self.values[sq]]
+            digitplaces = [sq for sq in unit if digit in values[sq]]
             if len(digitplaces) == 0:
                 return False # for contradiction
             elif len(digitplaces) == 1:
@@ -64,4 +63,12 @@ class SudokuGrid()
                     return False
         
         return values
+        
+    def PrintBoard(self, values):
+        width = 1+max(len(values[s]) for s in squares)
+        line = '+'.join(['-'*(width*3)]*3)
+        for r in self.rows:
+            print ''.join(values[r + c].center(width) + ('|' if c in '36' else '') for c in cols)
+            if r in 'CF': print line
+        print
     
